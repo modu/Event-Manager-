@@ -1,301 +1,673 @@
-#include<iostream>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include "RedBlackTree.h"
 using namespace std;
 
-typedef struct tree{
-    struct tree* left;
-    struct tree* right;
-    struct tree* parent;
-    int info;
-    char color;
-}node;
 
-void left_rotate(node* &root , node* x , node* &neel){
-    node* y=x->right;
+void inorder(NODEPTR x) {
+    if (x != NULL) {
+        inorder(x->left);
+        printf("%d ", x->key);
+        inorder(x->right);
+    }
+}
+
+NODEPTR search(NODEPTR root, int k) {
+    if (root == NULL || root->key == k)
+        return root;
+    if (k < root->key)
+        return search(root->left, k);
+    else
+        return search(root->right, k);
+}
+
+NODEPTR minimum(NODEPTR root) {
+    while (root->left != NULL)
+        root = root->left;
+    return root;
+}
+
+NODEPTR maximum(NODEPTR root) {
+    while (root->right != NULL)
+        root = root->right;
+    return root;
+}
+
+
+NODEPTR getClosestNode(NODEPTR pRoot, int value)
+{
+    NODEPTR pClosest = NULL;
+    int minDistance = 0x7FFFFFFF;
+    NODEPTR pNode = pRoot;
+    while(pNode != NULL)
+    {
+        int distance = abs(pNode->key - value);
+        if(distance < minDistance)
+        {
+            minDistance = distance;
+            pClosest = pNode;
+        }
+        
+        if(distance == 0)
+            break;
+        
+        if(pNode->key > value)
+            pNode = pNode->left;
+        else if(pNode->key < value)
+            pNode = pNode->right;
+    }
+    
+    return pClosest;
+}
+
+NODEPTR predecessor(NODEPTR root, int x) {
+    
+    NODEPTR temp = search(root, x);
+    if (temp == NULL) {
+        //        printf("%d not in tree\n", x);
+        NODEPTR temp1 = getClosestNode(root , x );
+        if (temp1->key < x ) {
+            return temp1;
+        }
+        else {
+            return predecessor(root , temp1->key);
+        }
+    }
+    NODEPTR currentPtr = temp;
+    if (currentPtr->left != NULL)
+        return maximum(currentPtr->left);
+    
+    NODEPTR y = currentPtr->p;
+    while (y != NULL && currentPtr == y->left) {
+        currentPtr = y;
+        y = y->p;
+    }
+    return y;
+}
+
+NODEPTR successor(NODEPTR root, int x) {
+    NODEPTR temp = search(root, x);
+    if (temp == NULL) {
+        //        printf("%d not in tree\n", x);
+        NODEPTR temp1 = getClosestNode(root, x);
+        if (temp1->key < x ) {
+            return successor(root , temp1->key);
+        }
+        else {
+            return temp1;
+        }
+    }
+    NODEPTR currentPtr = temp;
+    if (currentPtr->right != NULL)
+        return minimum(currentPtr->right);
+    NODEPTR y = currentPtr->p;
+    while (y != NULL && currentPtr == y->right) {
+        currentPtr = y;
+        y = y->p;
+    }
+    return y;
+}
+
+void leftrotate(NODEPTR treeroot, NODEPTR x) {
+    NODEPTR y = x->right;
     x->right = y->left;
-    
-    if(y->left!=neel)
-        y->left->parent = x;
-    y->parent=x->parent;
-    
-    if(x->parent==neel)
-        root = y;
-    else if(x==x->parent->left)
-        x->parent->left = y;
+    if (y->left != NULL)
+        y->left->p = x;
+    y->p = x->p;
+    if (x->p == NULL)
+        treeroot = y;
+    else if (x->p->left == x)
+        x->p->left = y;
     else
-        x->parent->right = y;
-    
+        x->p->right = y;
     y->left = x;
-    x->parent = y;
+    x->p = y;
 }
 
-void right_rotate(node* &root , node* y , node* &neel){
-    node* x = y->left;
+void rightrotate(NODEPTR treeroot, NODEPTR y) {
+    NODEPTR x = y->left;
     y->left = x->right;
-    
-    if(x->right!=neel)
-        x->right->parent = y;
-    x->parent = y->parent;
-    
-    if(y->parent==neel)
-        root = x;
-    else if(y==y->parent->left)
-        y->parent->left = x;
+    if (x->right != NULL)
+        x->right->p = y;
+    x->p = y->p;
+    if (y->p == NULL)
+        treeroot = x;
+    else if (y->p->left == y)
+        y->p->left = x;
     else
-        y->parent->right = x;
-    
+        y->p->right = x;
     x->right = y;
-    y->parent = x;
+    y->p = x;
 }
 
-void insert_fixup(node* &root , node* z , node* &neel){
-    while(z->parent->color=='r'){
-        
-        if(z->parent==z->parent->parent->left){
-            node* y=z->parent->parent->right;
-            if(y->color=='r'){
-                z->parent->color='b';
-                y->color='b';
-                z->parent->parent->color='r';
-                z=z->parent->parent;
+void rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
+    while (z->p->color == RED) {
+        if (z->p == z->p->p->left) {
+            NODEPTR y = z->p->p->right;
+            if (y->color == RED) {
+                z->p->color = BLACK;
+                y->color = BLACK;
+                z->p->p->color = RED;
+                z = z->p->p;
             }
-            else if(z==z->parent->right){
-                z=z->parent;
-                left_rotate(root,z,neel);
-                
-                z->parent->color='b';
-                z->parent->parent->color='r';
-                right_rotate(root,z->parent->parent,neel);
-            }
-            else{
-                z->parent->color='b';
-                z->parent->parent->color='r';
-                right_rotate(root,z->parent->parent,neel);
+            else {
+                if (z == z->p->right) {
+                    z = z->p;
+                    leftrotate(treeroot,z);
+                }
+                z->p->color = BLACK;
+                z->p->p->color = RED;
+                rightrotate(treeroot,z->p->p);
             }
         }
-        else{                                   //i.e. (z.p == z.p.p.right)
-            node* y=z->parent->parent->left;
-            if(y->color=='r'){
-                z->parent->color='b';
-                y->color='b';
-                z->parent->parent->color='r';
-                z=z->parent->parent;
+        else {
+            NODEPTR y = z->p->p->left;
+            if (y->color == RED) {
+                z->p->color = BLACK;
+                y->color = BLACK;
+                z->p->p->color = RED;
+                z = z->p->p;
             }
-            else if(z==z->parent->left){
-                z=z->parent;
-                right_rotate(root,z,neel);
-                
-                z->parent->color='b';
-                z->parent->parent->color='r';
-                left_rotate(root,z->parent->parent,neel);
-            }
-            else{
-                z->parent->color='b';
-                z->parent->parent->color='r';
-                left_rotate(root,z->parent->parent,neel);
+            else {
+                if (z == z->p->left) {
+                    z = z->p;
+                    rightrotate(treeroot,z);
+                }
+                z->p->color = BLACK;
+                z->p->p->color = RED;
+                leftrotate(treeroot,z->p->p);
             }
         }
     }
-    root->color='b';
+    (treeroot)->color = BLACK;
 }
 
-void insert(node* &root , node* &z , node* &neel){
-    node* y=neel;
-    node* x=root;
-    while(x!=neel){
-        y=x;
-        if(z->info < x->info)
-            x=x->left;
+void rbinsert(NODEPTR treeroot, int z, int _count) {
+    NODEPTR Z = (NODEPTR) malloc(sizeof(struct Node));
+    Z->key = z;
+    Z->count = _count;
+    NODEPTR y = NULL;
+    NODEPTR x = treeroot;
+    while (x != NULL) {
+        y = x;
+        if (Z->key < x->key)
+            x = x->left;
         else
-            x=x->right;
+            x = x->right;
     }
-    z->parent=y;
-    
-    if(y==neel)
-        root=z;
-    else if(z->info < y->info)
-        y->left=z;
+    Z->p = y;
+    if (y == NULL)
+        treeroot = Z;
+    else if (Z->key < y->key)
+        y->left = Z;
     else
-        y->right=z;
-    
-    z->left=neel;
-    z->right=neel;
-    z->color='r';
-    insert_fixup(root,z,neel);
+        y->right = Z;
+    Z->left = NULL;
+    Z->right = NULL;
+    Z->color = RED;
+    cout<<Z->count;
+    rbinsertfixup(treeroot,Z);
 }
 
-void transplant(node* &root , node* &u , node* &v , node* neel){
-    if(u->parent==neel)
-        root=v;
-    else if(u==u->parent->left)
-        u->parent->left=v;
+void rbtransplant(NODEPTR treeroot, NODEPTR u, NODEPTR v) {
+    if (u->p == NULL)
+        treeroot = v;
+    else if (u == u->p->left)
+        u->p->left = v;
     else
-        u->parent->right=v;
-    v->parent=u->parent;
+        u->p->right = v;
+    v->p = u->p;
 }
 
-void del_fixup(node* &root , node* x , node* &neel){
-    while(x!=root && x->color=='b'){
+void rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
+    //cout<<"rbdeletefixup \n";
+    while (x != treeroot && x->color == BLACK) {
+        if (x == x->p->left) {
+            NODEPTR w = x->p->right;
+            if (w->color == RED) {
+                w->color = BLACK;
+                x->p->color = RED;
+                leftrotate(treeroot,x->p);
+                w = x->p->right;
+            }
+            if (w->left->color == BLACK && w->right->color == BLACK) {
+                w->color = RED;
+                x = x->p;
+            }
+            else {
+                if (w->right->color == BLACK) {
+                    w->left->color = BLACK;
+                    w->color = RED;
+                    rightrotate(treeroot,w);
+                    w = x->p->right;
+                }
+                w->color = x->p->color;
+                x->p->color = BLACK;
+                w->right->color = BLACK;
+                leftrotate(treeroot,x->p);
+                x = treeroot;
+            }
+        }
+        else {
+            NODEPTR w = x->p->left;
+            if (w->color == RED) {
+                w->color = BLACK;
+                x->p->color = RED;
+                rightrotate(treeroot,x->p);
+                w = x->p->left;
+            }
+            if (w->left->color == BLACK && w->right->color == BLACK) {
+                w->color = RED;
+                x = x->p;
+            }
+            else {
+                if (w->left->color == BLACK) {
+                    w->right->color = BLACK;
+                    w->color = RED;
+                    leftrotate(treeroot,w);
+                    w = x->p->left;
+                }
+                w->color = x->p->color;
+                x->p->color = BLACK;
+                w->left->color = BLACK;
+                rightrotate(treeroot,x->p);
+                x = treeroot;
+            }
+        }
+    }
+   // cout<<"rbdeletefixup end \n";
+
+    x->color = BLACK;
+}
+
+void rbdelete(NODEPTR treeroot, int z) {
+    NODEPTR Z = search(treeroot, z);
+
+    if (Z == NULL) {
+        printf("Node to be deleted not found\n");
+        return;
+    }
+    
+    NODEPTR y = Z;
+    int yoc = y->color;
+    NODEPTR x;
+    if (Z->left == NULL) {
+        x = Z->right;
+        //cout<<"rbdelete \n";
+        rbtransplant(treeroot,Z,Z->right);
+    }
+    else if (Z->right == NULL) {
+        x = Z->left;
+        rbtransplant(treeroot,Z,Z->left);
+    }
+    else {
+        y = minimum(Z->right);
+        yoc = y->color;
+        x = y->right;
+        if (y->p == Z){
+            //cout<<y->key; //<< " " << x->key;
+            if (x != NULL ) x->p = y;
+        }
+        else {
+            rbtransplant(treeroot,y,y->right);
+            y->right = Z->right;
+            y->right->p = y;
+        }
+        rbtransplant(treeroot,Z,y);
+        y->left = Z->left;
+        y->left->p = y;
+        y->color = Z->color;
+    }
+    if (yoc == BLACK)
+        rbdeletefixup(treeroot,x);
+}
+
+NODEPTR cbst(vector<inputPairPTR> &num, int st, int ed, NODEPTR p ){
+    if (st>ed){
+        return NULL;
+    }else{
+        int mid = st+(ed-st)/2;
+        NODEPTR bst = new Node(num[mid]->ID  , num[mid]->count);
+        bst->left = cbst(num,st,mid-1, bst);
+        bst->right = cbst(num,mid+1,ed , bst);
+        bst->p = p ;
+        return bst;
+    }
+}
+
+NODEPTR sortedArrayToBST(vector<inputPairPTR> &num) {
+    if (num.size()==0){return NULL;}
+    
+    NODEPTR root = NULL;
+    
+    return cbst(num,0,num.size()-1, root );
+}
+
+void makeLeafRed(NODEPTR root){
+    
+    if (root == NULL) {
+        return ;
+    }
+    if (root->left == NULL && root->right == NULL) {
+        root->color = RED;
+        return;
+    }
+    if (root->left !=NULL ) {
+        makeLeafRed(root->left);
+    }
+    if (root->right != NULL) {
+        makeLeafRed(root->right);
+    }
+}
+
+void Increase(int theID , int m , NODEPTR root ){
+    //    cout<<"Inside the increase\n";
+    if (root == NULL) {
+        rbinsert(root, theID , m);
+        return ;
+    }
+    NODEPTR currentPtr = root;
+    //    cout<<"Inside the increase\n";
+    while (currentPtr!=NULL) {
+        /*If ID is found then increment the counter and return */
+        if (currentPtr->key == theID) {
+            currentPtr->count = currentPtr->count + m;
+            cout<<currentPtr->count;
+            return;
+        }
+        /*if theID is greater then currentPtr key then search in right else search in left*/
+        if (currentPtr->key < theID) {
+            currentPtr = currentPtr->right;
+        }
+        else {
+            currentPtr = currentPtr->left;
+        }
         
-        if(x==x->parent->left){
-            node* w=x->parent->right;
+    }
+    if (currentPtr == NULL) {
+        rbinsert(root, theID , m );
+    }
+}
+
+void Reduce( NODEPTR root,int theID , int m  ){
+    //cout<<"reduce \n";
+    if (root == NULL) {
+        return ;
+    }
+    NODEPTR currentPtr = root;
+
+    while (currentPtr!=NULL) {
+        /*If ID is found then increment the counter and return */
+        if (currentPtr->key == theID) {
+            currentPtr->count = currentPtr->count - m;
+            if (currentPtr->count <=0) {
+                //cout<<"reduce \n";
+                rbdelete(root, currentPtr->key);
+                //cout<<"Deleted successfully\n   ";
+                cout <<"0";
+                return ;
+            }
+            cout<<currentPtr->count;
+            return;
+        }
+        
+        /*if theID is greater then currentPtr key then search in right else search in left*/
+        if (currentPtr->key < theID) {
+            currentPtr = currentPtr->right;
+        }
+        else {
+            currentPtr = currentPtr->left;
+        }
+        
+    }
+    /*Couldn't find the element*/
+    if (currentPtr == NULL) {
+        //cout<<"Couldn't find the element reduce \n";
+        cout<<"0";
+    }
+    
+}
+
+void Count(NODEPTR root , int theID ){
+    NODEPTR currentPtr = root;
+    
+    while (currentPtr!=NULL) {
+        if (currentPtr->key == theID) {
+            cout<<currentPtr->count;
+            return ;
+        }
+        if (currentPtr->key < theID) {
+            currentPtr = currentPtr->right;
+        }
+        else currentPtr = currentPtr->left;
+    }
+    /*Couldn't find the element*/
+    if (currentPtr == NULL) {
+        cout<<"0\n";
+    }
+    
+}
+
+int InRange(NODEPTR root , int low , int high ){
+    
+    // Base case
+    if (!root) return 0;
+    
+    // Special Optional case for improving efficiency
+    if (root->key == high && root->key == low)
+        return root->count;
+    
+    // If current node is in range, then include it in count and
+    // recur for left and right children of it
+    if (root->key <= high && root->key >= low)
+        return root->count + InRange(root->left, low, high) +
+        InRange(root->right, low, high);
+    
+    // If current node is smaller than low, then recur for right
+    // child
+    else if (root->key < low)
+        return InRange(root->right, low, high);
+    
+    // Else recur for left child
+    else return InRange(root->left, low, high);
+    
+}
+
+int main(int argc, char * argv[])
+{
+    /*Check if a file is given as a command-line parameter
+     if not provided show error and exit*/
+    if (argc == 0) {
+        cout<<"Error print program usuage\n";
+        return -1;
+    }
+    /*TODO: Check if file exists*/
+    
+    /*Read from the file-name and build a Red-Black Tree*/
+    ifstream file(argv[1]); /*fstream*/
+    vector<inputPairPTR> tempVector;
+    int idTemp , countTemp;
+    string temp;
+    int ignoreFirstLine = 1;
+    if(file.is_open()){
+        while(file.good()){
+            if (ignoreFirstLine == 1) { /*Ignore the first number in file which is anyway lenght of input*/
+                getline(file,temp);
+                ignoreFirstLine = 0;
+                continue;
+            }
+            getline(file,temp);
+            stringstream ss(temp);
+            ss >> idTemp >> countTemp;
+            //cout<< idTemp << " " << countTemp << "\n\n";
+            struct inputPair * newNode = (struct inputPair *) malloc(sizeof(inputPair));
+            newNode->ID =  idTemp;
+            newNode->count = countTemp;
+            tempVector.push_back(newNode);
+        }
+    } else{
+        cout << "Error: Problem opening input file or some other problem with file\n\n";
+        exit(0);
+    }
+    
+    NODEPTR root = sortedArrayToBST(tempVector);
+    /*Freeing the memory of vector , it is 1GB so need to free it! */
+    vector<inputPairPTR>::iterator i;
+    for (i = tempVector.begin(); i != tempVector.end(); i++) {
+        free(*i);
+    }
+    tempVector.clear();
+    //    inorder(root);
+    //    cout<<"\n\n\n";
+    makeLeafRed(root);
+    /*Red Black Tree ready!*/
+    while (1) {
+        //Input a command
+        string command;
+        getline(cin,command);
+        stringstream ss(command);
+        //cout<<command<<"\n";
+        int theID , count = 0 ;
+        string leaveIt;
+        if (command.find("increase") != string::npos) {
+            ss >> leaveIt >> theID >> count;
+            //            cout<<"Increase Case\n";
+            Increase(theID,count,root);
+            cout<<"\n";
+        }
+        else if (command.find("reduce") != string::npos) {
+            ss >> leaveIt >> theID >> count;
+            //            //cout<<"reduce Case\n";
+            Reduce(root,theID,count);
+            cout<<"\n";
+        }
+        else if (command.find("count") != string::npos) {
+            ss >> leaveIt >> theID;
+            //            cout<<"count Case\n";
+            Count(root,theID);
+            cout<<"\n";
+        }
+        else if (command.find("inrange") != string::npos) {
+            int ID1 = 0 , ID2 = 0;
+            ss >> leaveIt >> ID1 >> ID2;
+            //Reduce(root,theID,count);
+            cout << InRange(root, ID1 , ID2);
+            cout<<"\n";
+        }
+        else if (command.find("next") != string::npos) {
+            ss >> leaveIt >> theID;
+            //            cout<<"next Case\n";
+            NODEPTR temp = successor(root,theID);
+            if (temp == NULL) {
+                cout<<"0 0";
+            }
+            else {
+                cout<<temp->key << " "<<temp->count;
+            }
+            cout<<"\n";
             
-            if(w->color=='r'){
-                w->color='b';
-                x->parent->color='r';
-                left_rotate(root,x->parent,neel);
-                w=x->parent->right;
-            }
-            if(w->left->color=='b' && w->right->color=='b'){
-                w->color='r';
-                x=x->parent;
-            }
-            else if(w->right->color=='b'){
-                w->left->color='b';
-                w->color='r';
-                right_rotate(root,w,neel);
-                w=x->parent->right;
-                
-                w->color=x->parent->color;
-                x->parent->color='b';
-                w->right->color='b';
-                left_rotate(root,x->parent,neel);
-                x=root;
-            }
-            else{
-                w->color=x->parent->color;
-                x->parent->color='b';
-                w->right->color='b';
-                left_rotate(root,x->parent,neel);
-                x=root;
-            }
         }
-        
-        else{
-            node* w=x->parent->left;
-            
-            if(w->color=='r'){
-                w->color='b';
-                x->parent->color='r';
-                right_rotate(root,x->parent,neel);
-                w=x->parent->left;
+        else if (command.find("previous") != string::npos) {
+            ss >> leaveIt >> theID;
+            //            cout<<"previous Case\n";
+            NODEPTR temp = predecessor(root,theID);
+            if (temp == NULL) {
+                cout<<"0 0";
             }
-            if(w->right->color=='b' && w->left->color=='b'){
-                w->color='r';
-                x=x->parent;
+            else {
+                cout<<temp->key << " "<<temp->count;
             }
-            else if(w->left->color=='b'){
-                w->right->color='b';
-                w->color='r';
-                left_rotate(root,w,neel);
-                w=x->parent->left;
-                
-                w->color=x->parent->color;
-                x->parent->color='b';
-                w->left->color='b';
-                right_rotate(root,x->parent,neel);
-                x=root;
-            }
-            else{
-                w->color=x->parent->color;
-                x->parent->color='b';
-                w->left->color='b';
-                right_rotate(root,x->parent,neel);
-                x=root;
-            }
+            cout<<"\n";
+        }
+        else if (command.find("quit") != string::npos) {
+            exit(0);
+        }
+        else if (command.find("inorder") != string::npos){
+            cout<<"\n";
+            inorder(root);
+            cout<<"\n";
         }
     }
-    x->color='b';
-}
-
-node* find_min(node* &root , node* neel){
-    node* temp=root;
-   	if(temp->left==neel)
-        return temp;
-    else
-        return find_min(temp->left,neel);
-}
-
-void del(node* &root , node* &z , node* &neel){
-    node* y=z;
-    node* x;
-    char y_original_color=y->color;
-    
-    if(z->left==neel){
-        x=z->right;
-        transplant(root,z,z->right,neel);
-    }
-    else if(z->right==neel){
-        x=z->left;
-        transplant(root,z,z->left,neel);
-    }
-    else{
-        y=find_min(z->right,neel);
-        y_original_color=y->color;
-        x=y->right;
-        
-        if(y->parent==z){
-            x->parent=y;
-        }
-        else{
-            transplant(root,y,y->right,neel);
-            y->right=z->right;
-            y->right->parent=y;
-        }
-        
-        transplant(root,z,y,neel);
-        y->left=z->left;
-        y->left->parent=y;
-        y->color=z->color;
-    }
-    
-    if(y_original_color=='b')
-        del_fixup(root,x,neel);
-}
-
-node* search(node* &root , int x , node* neel){
-    node* temp=root;
-    while(temp!=neel){
-        if(temp->info == x)
-            return temp;         
-        else if(x < temp->info)
-            temp=temp->left;
-        else if(x > temp->info)
-            temp=temp->right;
-    }
-    cout<<"\nelement is not in Tree \n";
-}
-
-void inorder(node* &p , node* &neel){
-    if(p!=neel){
-        inorder(p->left,neel);
-        cout<<p->info<<","<<p->color<<"  ";
-        inorder(p->right,neel);
-    }
-}
-
-int main(){
-    node* neel = new node;  
-    neel->color='b';
-    
-    node* root = neel;
-    for(int i=1;i<=10;i++){
-        node* z=new node;	
-        z->left=neel;
-        z->right=neel;
-        z->parent=neel;
-        z->color='r';
-        z->info=i;
-        insert(root,z,neel);
-    }
-    cout<<"\n";
-    inorder(root,neel);
-    cout<<"\n\nI am root node...   "<<root->info<<","<<root->color<<"\n";  
-    
-    node* temp=search(root,4,neel);
-    del(root,temp,neel);
-    cout<<"\n";
-    inorder(root,neel);
-    cout<<"\n\nI am root node...   "<<root->info<<","<<root->color<<"\n";  	
     return 0;
 }
+
+
+//    NIL.left = NIL.right = NIL.p = NILPTR;
+//    NIL.color = BLACK;
+//    NODEPTR tree = NILPTR;
+//    int n;
+//    while (1) {
+//        printf("1.Insert\n2.Search\n3.Inorder Walk\n4.Minimum\n5.Maximum\n6.Successor\n7.Predecessor\n8.Delete\n9.Exit\n");
+//        scanf("%d", &n);
+//        if (n == 1) {
+//            printf("Enter any number:\n");
+//            int num;
+//            scanf("%d", &num);
+//            rbinsert(&tree, num);
+//        }
+//        else if (n == 2) {
+//            printf("Enter the number to be search\n");
+//            int num;
+//            scanf("%d", &num);
+//            if (search(tree, num) == NILPTR)
+//                printf("%d not found\n", num);
+//            else
+//                printf("%d found\n", num);
+//        }
+//        else if (n == 3) {
+//            inorder(tree);
+//            printf("\n");
+//        }
+//        else if (n == 4)
+//            printf("%d\n", minimum(tree)->key);
+//        else if (n == 5)
+//            printf("%d\n", maximum(tree)->key);
+//        else if (n == 6) {
+//            printf("Enter the number whose successor needs to be found\n");
+//            int num;
+//            scanf("%d", &num);
+//            NODEPTR t = successor(tree, num);
+//            if (t != NULL)
+//                printf("%d\n", t->key);
+//        }
+//        else if (n == 7) {
+//            printf("Enter the number whose predecessor needs to be found\n");
+//            int num;
+//            scanf("%d", &num);
+//            NODEPTR t = predecessor(tree, num);
+//            if (t != NULL)
+//                printf("%d\n", t->key);
+//        }
+//        else if (n == 8) {
+//            printf("Enter the number to be deleted\n");
+//            int num;
+//            scanf("%d", &num);
+//            rbdelete(&tree, num);
+//        }
+//        else
+//            break;
+//    }
+
+//    if (root == NULL) {
+//        return 0;
+//    }
+//    /*Handle case when both ID1 and ID2 are same */
+//    if (ID1 == ID2) {
+//        NODEPTR temp = search(root , ID1);
+//        if (temp ! = NULL) return temp->key;
+//        else return 0;
+//    }
+//    /*Get the point were search divides*/
+//    while (currentPtr->key < ID1 ) { //&& currentPtr->key < ID2
+//        currentPtr = currentPtr->right;
+//    }
+//    while (currentPtr->key > ID2) {
+//        currentPtr = currentPtr->left;
+//    }
+//
+
