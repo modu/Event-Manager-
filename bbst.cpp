@@ -1,9 +1,38 @@
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "RedBlackTree.h"
+
 using namespace std;
-int main()
+
+NODEPTR cbst(vector<inputPairPTR> &num, int st, int ed, NODEPTR p ){
+    if (st>ed){
+        return NULL;
+    }else{
+        int mid = st+(ed-st)/2;
+        NODEPTR bst = new Node(num[mid]->ID  , num[mid]->count);
+        bst->left = cbst(num,st,mid-1, bst);
+        bst->right = cbst(num,mid+1,ed , bst);
+        bst->p = p ;
+        return bst;
+    }
+}
+
+NODEPTR sortedArrayToBST(vector<inputPairPTR> &num) {
+    if (num.size()==0){return NULL;}
+    
+    NODEPTR root = NULL;
+    
+    return cbst(num,0,num.size()-1, root );
+}
+
+int main(int argc, char * argv[])
 {
-    RBTree tree;
     /*Check if a file is given as a command-line parameter
      if not provided show error and exit*/
     if (argc == 0) {
@@ -46,51 +75,49 @@ int main()
         free(*i);
     }
     tempVector.clear();
-    //    inorder(root);
-    //    cout<<"\n\n\n";
-    RBTree rbTree(root);
-    rbTree.makeLeafRed(root);
+    RBTree rbtree = RBTree(root);
+    rbtree.makeLeafRed(root);
     /*Red Black Tree ready!*/
-    
+
     while (1) {
         //Input a command
         string command;
         getline(cin,command);
         stringstream ss(command);
-        cout<<command<<"\n";
+        //cout<<command<<"\n";
         int theID , count = 0 ;
         string leaveIt;
         if (command.find("increase") != string::npos) {
             ss >> leaveIt >> theID >> count;
             //            cout<<"Increase Case\n";
-            Increase(theID,count,root);
+            rbtree.Increase(theID,count,root);
             cout<<"\n";
         }
         else if (command.find("reduce") != string::npos) {
             ss >> leaveIt >> theID >> count;
-            //            cout<<"reduce Case\n";
-            Reduce(root,theID,count);
+            //            //cout<<"reduce Case\n";
+            rbtree.Reduce(root,theID,count);
             cout<<"\n";
         }
         else if (command.find("count") != string::npos) {
             ss >> leaveIt >> theID;
             //            cout<<"count Case\n";
-            Count(root,theID);
+            rbtree.Count(root,theID);
             cout<<"\n";
         }
         else if (command.find("inrange") != string::npos) {
             int ID1 = 0 , ID2 = 0;
             ss >> leaveIt >> ID1 >> ID2;
             //Reduce(root,theID,count);
-            cout << InRange(root, ID1 , ID2);
+            cout << rbtree.InRange(root, ID1 , ID2);
             cout<<"\n";
         }
         else if (command.find("next") != string::npos) {
             ss >> leaveIt >> theID;
             //            cout<<"next Case\n";
-            NODEPTR temp = successor(root,theID);
+            NODEPTR temp = rbtree.successor(root,theID);
             if (temp == NULL) {
-                cout<<"0 0\n";
+                cout<<"0 0";
             }
             else {
                 cout<<temp->key << " "<<temp->count;
@@ -101,9 +128,9 @@ int main()
         else if (command.find("previous") != string::npos) {
             ss >> leaveIt >> theID;
             //            cout<<"previous Case\n";
-            NODEPTR temp = predecessor(root,theID);
+            NODEPTR temp = rbtree.predecessor(root,theID);
             if (temp == NULL) {
-                cout<<"0 0\n";
+                cout<<"0 0";
             }
             else {
                 cout<<temp->key << " "<<temp->count;
@@ -113,8 +140,11 @@ int main()
         else if (command.find("quit") != string::npos) {
             exit(0);
         }
+        else if (command.find("inorder") != string::npos){
+            cout<<"\n";
+            rbtree.inorder(root);
+            cout<<"\n";
+        }
     }
     return 0;
-
-
 }

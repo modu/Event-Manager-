@@ -9,7 +9,7 @@
 using namespace std;
 
 
-void inorder(NODEPTR x) {
+void RBTree::inorder(NODEPTR x) {
     if (x != NULL) {
         inorder(x->left);
         printf("%d ", x->key);
@@ -17,7 +17,7 @@ void inorder(NODEPTR x) {
     }
 }
 
-NODEPTR search(NODEPTR root, int k) {
+NODEPTR RBTree::search(NODEPTR root, int k) {
     if (root == NULL || root->key == k)
         return root;
     if (k < root->key)
@@ -26,21 +26,19 @@ NODEPTR search(NODEPTR root, int k) {
         return search(root->right, k);
 }
 
-NODEPTR minimum(NODEPTR root) {
+NODEPTR RBTree::minimum(NODEPTR root) {
     while (root->left != NULL)
         root = root->left;
     return root;
 }
 
-NODEPTR maximum(NODEPTR root) {
+NODEPTR RBTree::maximum(NODEPTR root) {
     while (root->right != NULL)
         root = root->right;
     return root;
 }
 
-
-NODEPTR getClosestNode(NODEPTR pRoot, int value)
-{
+NODEPTR RBTree::getClosestNode(NODEPTR pRoot, int value){
     NODEPTR pClosest = NULL;
     int minDistance = 0x7FFFFFFF;
     NODEPTR pNode = pRoot;
@@ -65,7 +63,7 @@ NODEPTR getClosestNode(NODEPTR pRoot, int value)
     return pClosest;
 }
 
-NODEPTR predecessor(NODEPTR root, int x) {
+NODEPTR RBTree::predecessor(NODEPTR root, int x) {
     
     NODEPTR temp = search(root, x);
     if (temp == NULL) {
@@ -90,7 +88,7 @@ NODEPTR predecessor(NODEPTR root, int x) {
     return y;
 }
 
-NODEPTR successor(NODEPTR root, int x) {
+NODEPTR RBTree::successor(NODEPTR root, int x) {
     NODEPTR temp = search(root, x);
     if (temp == NULL) {
         //        printf("%d not in tree\n", x);
@@ -113,7 +111,7 @@ NODEPTR successor(NODEPTR root, int x) {
     return y;
 }
 
-void leftrotate(NODEPTR treeroot, NODEPTR x) {
+void RBTree::leftrotate(NODEPTR treeroot, NODEPTR x) {
     NODEPTR y = x->right;
     x->right = y->left;
     if (y->left != NULL)
@@ -129,7 +127,7 @@ void leftrotate(NODEPTR treeroot, NODEPTR x) {
     x->p = y;
 }
 
-void rightrotate(NODEPTR treeroot, NODEPTR y) {
+void RBTree::rightrotate(NODEPTR treeroot, NODEPTR y) {
     NODEPTR x = y->left;
     y->left = x->right;
     if (x->right != NULL)
@@ -145,7 +143,7 @@ void rightrotate(NODEPTR treeroot, NODEPTR y) {
     y->p = x;
 }
 
-void rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
+void RBTree::rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
     while (z->p->color == RED) {
         if (z->p == z->p->p->left) {
             NODEPTR y = z->p->p->right;
@@ -187,7 +185,7 @@ void rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
     (treeroot)->color = BLACK;
 }
 
-void rbinsert(NODEPTR treeroot, int z, int _count) {
+void RBTree::rbinsert(NODEPTR treeroot, int z, int _count) {
     NODEPTR Z = (NODEPTR) malloc(sizeof(struct Node));
     Z->key = z;
     Z->count = _count;
@@ -214,7 +212,7 @@ void rbinsert(NODEPTR treeroot, int z, int _count) {
     rbinsertfixup(treeroot,Z);
 }
 
-void rbtransplant(NODEPTR treeroot, NODEPTR u, NODEPTR v) {
+void RBTree::rbtransplant(NODEPTR treeroot, NODEPTR u, NODEPTR v) {
     if (u->p == NULL)
         treeroot = v;
     else if (u == u->p->left)
@@ -224,7 +222,7 @@ void rbtransplant(NODEPTR treeroot, NODEPTR u, NODEPTR v) {
     v->p = u->p;
 }
 
-void rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
+void RBTree::rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
     //cout<<"rbdeletefixup \n";
     while (x != treeroot && x->color == BLACK) {
         if (x == x->p->left) {
@@ -285,7 +283,7 @@ void rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
     x->color = BLACK;
 }
 
-void rbdelete(NODEPTR treeroot, int z) {
+void RBTree::rbdelete(NODEPTR treeroot, int z) {
     NODEPTR Z = search(treeroot, z);
 
     if (Z == NULL) {
@@ -327,28 +325,7 @@ void rbdelete(NODEPTR treeroot, int z) {
         rbdeletefixup(treeroot,x);
 }
 
-NODEPTR cbst(vector<inputPairPTR> &num, int st, int ed, NODEPTR p ){
-    if (st>ed){
-        return NULL;
-    }else{
-        int mid = st+(ed-st)/2;
-        NODEPTR bst = new Node(num[mid]->ID  , num[mid]->count);
-        bst->left = cbst(num,st,mid-1, bst);
-        bst->right = cbst(num,mid+1,ed , bst);
-        bst->p = p ;
-        return bst;
-    }
-}
-
-NODEPTR sortedArrayToBST(vector<inputPairPTR> &num) {
-    if (num.size()==0){return NULL;}
-    
-    NODEPTR root = NULL;
-    
-    return cbst(num,0,num.size()-1, root );
-}
-
-void makeLeafRed(NODEPTR root){
+void RBTree::makeLeafRed(NODEPTR root){
     
     if (root == NULL) {
         return ;
@@ -365,7 +342,7 @@ void makeLeafRed(NODEPTR root){
     }
 }
 
-void Increase(int theID , int m , NODEPTR root ){
+void RBTree::Increase(int theID , int m , NODEPTR root ){
     //    cout<<"Inside the increase\n";
     if (root == NULL) {
         rbinsert(root, theID , m);
@@ -394,7 +371,7 @@ void Increase(int theID , int m , NODEPTR root ){
     }
 }
 
-void Reduce( NODEPTR root,int theID , int m  ){
+void RBTree::Reduce( NODEPTR root,int theID , int m  ){
     //cout<<"reduce \n";
     if (root == NULL) {
         return ;
@@ -433,7 +410,7 @@ void Reduce( NODEPTR root,int theID , int m  ){
     
 }
 
-void Count(NODEPTR root , int theID ){
+void RBTree::Count(NODEPTR root , int theID ){
     NODEPTR currentPtr = root;
     
     while (currentPtr!=NULL) {
@@ -453,7 +430,7 @@ void Count(NODEPTR root , int theID ){
     
 }
 
-int InRange(NODEPTR root , int low , int high ){
+int RBTree::InRange(NODEPTR root , int low , int high ){
     
     // Base case
     if (!root) return 0;
@@ -478,123 +455,124 @@ int InRange(NODEPTR root , int low , int high ){
     
 }
 
-int main(int argc, char * argv[])
-{
-    /*Check if a file is given as a command-line parameter
-     if not provided show error and exit*/
-    if (argc == 0) {
-        cout<<"Error print program usuage\n";
-        return -1;
-    }
-    /*TODO: Check if file exists*/
-    
-    /*Read from the file-name and build a Red-Black Tree*/
-    ifstream file(argv[1]); /*fstream*/
-    vector<inputPairPTR> tempVector;
-    int idTemp , countTemp;
-    string temp;
-    int ignoreFirstLine = 1;
-    if(file.is_open()){
-        while(file.good()){
-            if (ignoreFirstLine == 1) { /*Ignore the first number in file which is anyway lenght of input*/
-                getline(file,temp);
-                ignoreFirstLine = 0;
-                continue;
-            }
-            getline(file,temp);
-            stringstream ss(temp);
-            ss >> idTemp >> countTemp;
-            //cout<< idTemp << " " << countTemp << "\n\n";
-            struct inputPair * newNode = (struct inputPair *) malloc(sizeof(inputPair));
-            newNode->ID =  idTemp;
-            newNode->count = countTemp;
-            tempVector.push_back(newNode);
-        }
-    } else{
-        cout << "Error: Problem opening input file or some other problem with file\n\n";
-        exit(0);
-    }
-    
-    NODEPTR root = sortedArrayToBST(tempVector);
-    /*Freeing the memory of vector , it is 1GB so need to free it! */
-    vector<inputPairPTR>::iterator i;
-    for (i = tempVector.begin(); i != tempVector.end(); i++) {
-        free(*i);
-    }
-    tempVector.clear();
-    //    inorder(root);
-    //    cout<<"\n\n\n";
-    makeLeafRed(root);
-    /*Red Black Tree ready!*/
-    while (1) {
-        //Input a command
-        string command;
-        getline(cin,command);
-        stringstream ss(command);
-        //cout<<command<<"\n";
-        int theID , count = 0 ;
-        string leaveIt;
-        if (command.find("increase") != string::npos) {
-            ss >> leaveIt >> theID >> count;
-            //            cout<<"Increase Case\n";
-            Increase(theID,count,root);
-            cout<<"\n";
-        }
-        else if (command.find("reduce") != string::npos) {
-            ss >> leaveIt >> theID >> count;
-            //            //cout<<"reduce Case\n";
-            Reduce(root,theID,count);
-            cout<<"\n";
-        }
-        else if (command.find("count") != string::npos) {
-            ss >> leaveIt >> theID;
-            //            cout<<"count Case\n";
-            Count(root,theID);
-            cout<<"\n";
-        }
-        else if (command.find("inrange") != string::npos) {
-            int ID1 = 0 , ID2 = 0;
-            ss >> leaveIt >> ID1 >> ID2;
-            //Reduce(root,theID,count);
-            cout << InRange(root, ID1 , ID2);
-            cout<<"\n";
-        }
-        else if (command.find("next") != string::npos) {
-            ss >> leaveIt >> theID;
-            //            cout<<"next Case\n";
-            NODEPTR temp = successor(root,theID);
-            if (temp == NULL) {
-                cout<<"0 0";
-            }
-            else {
-                cout<<temp->key << " "<<temp->count;
-            }
-            cout<<"\n";
-            
-        }
-        else if (command.find("previous") != string::npos) {
-            ss >> leaveIt >> theID;
-            //            cout<<"previous Case\n";
-            NODEPTR temp = predecessor(root,theID);
-            if (temp == NULL) {
-                cout<<"0 0";
-            }
-            else {
-                cout<<temp->key << " "<<temp->count;
-            }
-            cout<<"\n";
-        }
-        else if (command.find("quit") != string::npos) {
-            exit(0);
-        }
-        else if (command.find("inorder") != string::npos){
-            cout<<"\n";
-            inorder(root);
-            cout<<"\n";
-        }
-    }
-    return 0;
-}
+//
+//int main(int argc, char * argv[])
+//{
+//    /*Check if a file is given as a command-line parameter
+//     if not provided show error and exit*/
+//    if (argc == 0) {
+//        cout<<"Error print program usuage\n";
+//        return -1;
+//    }
+//    /*TODO: Check if file exists*/
+//    
+//    /*Read from the file-name and build a Red-Black Tree*/
+//    ifstream file(argv[1]); /*fstream*/
+//    vector<inputPairPTR> tempVector;
+//    int idTemp , countTemp;
+//    string temp;
+//    int ignoreFirstLine = 1;
+//    if(file.is_open()){
+//        while(file.good()){
+//            if (ignoreFirstLine == 1) { /*Ignore the first number in file which is anyway lenght of input*/
+//                getline(file,temp);
+//                ignoreFirstLine = 0;
+//                continue;
+//            }
+//            getline(file,temp);
+//            stringstream ss(temp);
+//            ss >> idTemp >> countTemp;
+//            //cout<< idTemp << " " << countTemp << "\n\n";
+//            struct inputPair * newNode = (struct inputPair *) malloc(sizeof(inputPair));
+//            newNode->ID =  idTemp;
+//            newNode->count = countTemp;
+//            tempVector.push_back(newNode);
+//        }
+//    } else{
+//        cout << "Error: Problem opening input file or some other problem with file\n\n";
+//        exit(0);
+//    }
+//    
+//    NODEPTR root = sortedArrayToBST(tempVector);
+//    /*Freeing the memory of vector , it is 1GB so need to free it! */
+//    vector<inputPairPTR>::iterator i;
+//    for (i = tempVector.begin(); i != tempVector.end(); i++) {
+//        free(*i);
+//    }
+//    tempVector.clear();
+//    //    inorder(root);
+//    //    cout<<"\n\n\n";
+//    makeLeafRed(root);
+//    /*Red Black Tree ready!*/
+//    while (1) {
+//        //Input a command
+//        string command;
+//        getline(cin,command);
+//        stringstream ss(command);
+//        //cout<<command<<"\n";
+//        int theID , count = 0 ;
+//        string leaveIt;
+//        if (command.find("increase") != string::npos) {
+//            ss >> leaveIt >> theID >> count;
+//            //            cout<<"Increase Case\n";
+//            Increase(theID,count,root);
+//            cout<<"\n";
+//        }
+//        else if (command.find("reduce") != string::npos) {
+//            ss >> leaveIt >> theID >> count;
+//            //            //cout<<"reduce Case\n";
+//            Reduce(root,theID,count);
+//            cout<<"\n";
+//        }
+//        else if (command.find("count") != string::npos) {
+//            ss >> leaveIt >> theID;
+//            //            cout<<"count Case\n";
+//            Count(root,theID);
+//            cout<<"\n";
+//        }
+//        else if (command.find("inrange") != string::npos) {
+//            int ID1 = 0 , ID2 = 0;
+//            ss >> leaveIt >> ID1 >> ID2;
+//            //Reduce(root,theID,count);
+//            cout << InRange(root, ID1 , ID2);
+//            cout<<"\n";
+//        }
+//        else if (command.find("next") != string::npos) {
+//            ss >> leaveIt >> theID;
+//            //            cout<<"next Case\n";
+//            NODEPTR temp = successor(root,theID);
+//            if (temp == NULL) {
+//                cout<<"0 0";
+//            }
+//            else {
+//                cout<<temp->key << " "<<temp->count;
+//            }
+//            cout<<"\n";
+//            
+//        }
+//        else if (command.find("previous") != string::npos) {
+//            ss >> leaveIt >> theID;
+//            //            cout<<"previous Case\n";
+//            NODEPTR temp = predecessor(root,theID);
+//            if (temp == NULL) {
+//                cout<<"0 0";
+//            }
+//            else {
+//                cout<<temp->key << " "<<temp->count;
+//            }
+//            cout<<"\n";
+//        }
+//        else if (command.find("quit") != string::npos) {
+//            exit(0);
+//        }
+//        else if (command.find("inorder") != string::npos){
+//            cout<<"\n";
+//            inorder(root);
+//            cout<<"\n";
+//        }
+//    }
+//    return 0;
+//}
 
 
 //    NIL.left = NIL.right = NIL.p = NILPTR;
