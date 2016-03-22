@@ -9,7 +9,7 @@
 #include "RedBlackTree.h"
 
 using namespace std;
-
+/*Function to build RB tree in O(lg n) */
 NODEPTR cbst(vector<inputPairPTR> &num, int st, int ed, NODEPTR p ){
     if (st>ed){
         return NULL;
@@ -25,9 +25,9 @@ NODEPTR cbst(vector<inputPairPTR> &num, int st, int ed, NODEPTR p ){
 
 NODEPTR sortedArrayToBST(vector<inputPairPTR> &num) {
     if (num.size()==0){return NULL;}
-    
+
+    /*Setting root's parent as NULL*/
     NODEPTR root = NULL;
-    
     return cbst(num,0,num.size()-1, root );
 }
 
@@ -123,7 +123,6 @@ int main(int argc, char * argv[])
                 cout<<temp->key << " "<<temp->count;
             }
             cout<<"\n";
-            
         }
         else if (command.find("previous") != string::npos) {
             ss >> leaveIt >> theID;

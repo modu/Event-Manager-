@@ -31,12 +31,13 @@ NODEPTR RBTree::minimum(NODEPTR root) {
         root = root->left;
     return root;
 }
-
+/*Searches right most in BST manner*/
 NODEPTR RBTree::maximum(NODEPTR root) {
     while (root->right != NULL)
         root = root->right;
     return root;
 }
+
 
 NODEPTR RBTree::getClosestNode(NODEPTR pRoot, int value){
     NODEPTR pClosest = NULL;
@@ -63,6 +64,10 @@ NODEPTR RBTree::getClosestNode(NODEPTR pRoot, int value){
     return pClosest;
 }
 
+/*Print the ID and the count of the event with the lowest ID that is greater that theID. Print “0 0”, if there is no next ID.
+ Internally uses getCloasestNode and predecessor recursively to find nearest predecessor
+ 
+ */
 NODEPTR RBTree::predecessor(NODEPTR root, int x) {
     
     NODEPTR temp = search(root, x);
@@ -88,6 +93,10 @@ NODEPTR RBTree::predecessor(NODEPTR root, int x) {
     return y;
 }
 
+/*Print the ID and the count of the event with the greatest key that is less that theID. Print “0 0”, if there is no previous ID.
+ Internally uses getCloasestNode and predecessor recursively to find nearest successor
+
+ */
 NODEPTR RBTree::successor(NODEPTR root, int x) {
     NODEPTR temp = search(root, x);
     if (temp == NULL) {
@@ -143,6 +152,7 @@ void RBTree::rightrotate(NODEPTR treeroot, NODEPTR y) {
     y->p = x;
 }
 
+
 void RBTree::rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
     while (z->p->color == RED) {
         if (z->p == z->p->p->left) {
@@ -185,6 +195,7 @@ void RBTree::rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
     (treeroot)->color = BLACK;
 }
 
+
 void RBTree::rbinsert(NODEPTR treeroot, int z, int _count) {
     NODEPTR Z = (NODEPTR) malloc(sizeof(struct Node));
     Z->key = z;
@@ -212,6 +223,7 @@ void RBTree::rbinsert(NODEPTR treeroot, int z, int _count) {
     rbinsertfixup(treeroot,Z);
 }
 
+
 void RBTree::rbtransplant(NODEPTR treeroot, NODEPTR u, NODEPTR v) {
     if (u->p == NULL)
         treeroot = v;
@@ -222,6 +234,8 @@ void RBTree::rbtransplant(NODEPTR treeroot, NODEPTR u, NODEPTR v) {
     v->p = u->p;
 }
 
+/*Internal function to do rotations and fix of color to maintaint RB tree property
+ */
 void RBTree::rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
     //cout<<"rbdeletefixup \n";
     while (x != treeroot && x->color == BLACK) {
@@ -283,6 +297,9 @@ void RBTree::rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
     x->color = BLACK;
 }
 
+/*
+ Red Black tree delete function
+ */
 void RBTree::rbdelete(NODEPTR treeroot, int z) {
     NODEPTR Z = search(treeroot, z);
 
@@ -325,6 +342,8 @@ void RBTree::rbdelete(NODEPTR treeroot, int z) {
         rbdeletefixup(treeroot,x);
 }
 
+/*Internal function to make every leaf red after tree is recursively created*/
+
 void RBTree::makeLeafRed(NODEPTR root){
     
     if (root == NULL) {
@@ -342,6 +361,12 @@ void RBTree::makeLeafRed(NODEPTR root){
     }
 }
 
+
+/*Increase the count of the event theID by m. 
+ If theID is not present, insert it. 
+ Print the count of theID after the addition.
+ Internally uses rbinsert to add the new element
+ */
 void RBTree::Increase(int theID , int m , NODEPTR root ){
     //    cout<<"Inside the increase\n";
     if (root == NULL) {
@@ -371,8 +396,11 @@ void RBTree::Increase(int theID , int m , NODEPTR root ){
     }
 }
 
+
+/*Decrease the count of theID by m. If theID’s count becomes less than or equal to 0, remove theID from the counter. Print the count of theID after the deletion, or 0 if theID is removed or not present.
+ Internally uses rbdelete once the count decrease less then or equal to zero
+ */
 void RBTree::Reduce( NODEPTR root,int theID , int m  ){
-    //cout<<"reduce \n";
     if (root == NULL) {
         return ;
     }
@@ -383,7 +411,6 @@ void RBTree::Reduce( NODEPTR root,int theID , int m  ){
         if (currentPtr->key == theID) {
             currentPtr->count = currentPtr->count - m;
             if (currentPtr->count <=0) {
-                //cout<<"reduce \n";
                 rbdelete(root, currentPtr->key);
                 //cout<<"Deleted successfully\n   ";
                 cout <<"0";
@@ -404,12 +431,12 @@ void RBTree::Reduce( NODEPTR root,int theID , int m  ){
     }
     /*Couldn't find the element*/
     if (currentPtr == NULL) {
-        //cout<<"Couldn't find the element reduce \n";
         cout<<"0";
     }
     
 }
 
+/*Print the count of theID iteratively. If not present, prints 0*/
 void RBTree::Count(NODEPTR root , int theID ){
     NODEPTR currentPtr = root;
     
@@ -429,6 +456,11 @@ void RBTree::Count(NODEPTR root , int theID ){
     }
     
 }
+
+
+/*Print the total count for IDs between ID1 and ID2 inclusively
+ this does it recursively 
+ */
 
 int RBTree::InRange(NODEPTR root , int low , int high ){
     
@@ -454,198 +486,3 @@ int RBTree::InRange(NODEPTR root , int low , int high ){
     else return InRange(root->left, low, high);
     
 }
-
-//
-//int main(int argc, char * argv[])
-//{
-//    /*Check if a file is given as a command-line parameter
-//     if not provided show error and exit*/
-//    if (argc == 0) {
-//        cout<<"Error print program usuage\n";
-//        return -1;
-//    }
-//    /*TODO: Check if file exists*/
-//    
-//    /*Read from the file-name and build a Red-Black Tree*/
-//    ifstream file(argv[1]); /*fstream*/
-//    vector<inputPairPTR> tempVector;
-//    int idTemp , countTemp;
-//    string temp;
-//    int ignoreFirstLine = 1;
-//    if(file.is_open()){
-//        while(file.good()){
-//            if (ignoreFirstLine == 1) { /*Ignore the first number in file which is anyway lenght of input*/
-//                getline(file,temp);
-//                ignoreFirstLine = 0;
-//                continue;
-//            }
-//            getline(file,temp);
-//            stringstream ss(temp);
-//            ss >> idTemp >> countTemp;
-//            //cout<< idTemp << " " << countTemp << "\n\n";
-//            struct inputPair * newNode = (struct inputPair *) malloc(sizeof(inputPair));
-//            newNode->ID =  idTemp;
-//            newNode->count = countTemp;
-//            tempVector.push_back(newNode);
-//        }
-//    } else{
-//        cout << "Error: Problem opening input file or some other problem with file\n\n";
-//        exit(0);
-//    }
-//    
-//    NODEPTR root = sortedArrayToBST(tempVector);
-//    /*Freeing the memory of vector , it is 1GB so need to free it! */
-//    vector<inputPairPTR>::iterator i;
-//    for (i = tempVector.begin(); i != tempVector.end(); i++) {
-//        free(*i);
-//    }
-//    tempVector.clear();
-//    //    inorder(root);
-//    //    cout<<"\n\n\n";
-//    makeLeafRed(root);
-//    /*Red Black Tree ready!*/
-//    while (1) {
-//        //Input a command
-//        string command;
-//        getline(cin,command);
-//        stringstream ss(command);
-//        //cout<<command<<"\n";
-//        int theID , count = 0 ;
-//        string leaveIt;
-//        if (command.find("increase") != string::npos) {
-//            ss >> leaveIt >> theID >> count;
-//            //            cout<<"Increase Case\n";
-//            Increase(theID,count,root);
-//            cout<<"\n";
-//        }
-//        else if (command.find("reduce") != string::npos) {
-//            ss >> leaveIt >> theID >> count;
-//            //            //cout<<"reduce Case\n";
-//            Reduce(root,theID,count);
-//            cout<<"\n";
-//        }
-//        else if (command.find("count") != string::npos) {
-//            ss >> leaveIt >> theID;
-//            //            cout<<"count Case\n";
-//            Count(root,theID);
-//            cout<<"\n";
-//        }
-//        else if (command.find("inrange") != string::npos) {
-//            int ID1 = 0 , ID2 = 0;
-//            ss >> leaveIt >> ID1 >> ID2;
-//            //Reduce(root,theID,count);
-//            cout << InRange(root, ID1 , ID2);
-//            cout<<"\n";
-//        }
-//        else if (command.find("next") != string::npos) {
-//            ss >> leaveIt >> theID;
-//            //            cout<<"next Case\n";
-//            NODEPTR temp = successor(root,theID);
-//            if (temp == NULL) {
-//                cout<<"0 0";
-//            }
-//            else {
-//                cout<<temp->key << " "<<temp->count;
-//            }
-//            cout<<"\n";
-//            
-//        }
-//        else if (command.find("previous") != string::npos) {
-//            ss >> leaveIt >> theID;
-//            //            cout<<"previous Case\n";
-//            NODEPTR temp = predecessor(root,theID);
-//            if (temp == NULL) {
-//                cout<<"0 0";
-//            }
-//            else {
-//                cout<<temp->key << " "<<temp->count;
-//            }
-//            cout<<"\n";
-//        }
-//        else if (command.find("quit") != string::npos) {
-//            exit(0);
-//        }
-//        else if (command.find("inorder") != string::npos){
-//            cout<<"\n";
-//            inorder(root);
-//            cout<<"\n";
-//        }
-//    }
-//    return 0;
-//}
-
-
-//    NIL.left = NIL.right = NIL.p = NILPTR;
-//    NIL.color = BLACK;
-//    NODEPTR tree = NILPTR;
-//    int n;
-//    while (1) {
-//        printf("1.Insert\n2.Search\n3.Inorder Walk\n4.Minimum\n5.Maximum\n6.Successor\n7.Predecessor\n8.Delete\n9.Exit\n");
-//        scanf("%d", &n);
-//        if (n == 1) {
-//            printf("Enter any number:\n");
-//            int num;
-//            scanf("%d", &num);
-//            rbinsert(&tree, num);
-//        }
-//        else if (n == 2) {
-//            printf("Enter the number to be search\n");
-//            int num;
-//            scanf("%d", &num);
-//            if (search(tree, num) == NILPTR)
-//                printf("%d not found\n", num);
-//            else
-//                printf("%d found\n", num);
-//        }
-//        else if (n == 3) {
-//            inorder(tree);
-//            printf("\n");
-//        }
-//        else if (n == 4)
-//            printf("%d\n", minimum(tree)->key);
-//        else if (n == 5)
-//            printf("%d\n", maximum(tree)->key);
-//        else if (n == 6) {
-//            printf("Enter the number whose successor needs to be found\n");
-//            int num;
-//            scanf("%d", &num);
-//            NODEPTR t = successor(tree, num);
-//            if (t != NULL)
-//                printf("%d\n", t->key);
-//        }
-//        else if (n == 7) {
-//            printf("Enter the number whose predecessor needs to be found\n");
-//            int num;
-//            scanf("%d", &num);
-//            NODEPTR t = predecessor(tree, num);
-//            if (t != NULL)
-//                printf("%d\n", t->key);
-//        }
-//        else if (n == 8) {
-//            printf("Enter the number to be deleted\n");
-//            int num;
-//            scanf("%d", &num);
-//            rbdelete(&tree, num);
-//        }
-//        else
-//            break;
-//    }
-
-//    if (root == NULL) {
-//        return 0;
-//    }
-//    /*Handle case when both ID1 and ID2 are same */
-//    if (ID1 == ID2) {
-//        NODEPTR temp = search(root , ID1);
-//        if (temp ! = NULL) return temp->key;
-//        else return 0;
-//    }
-//    /*Get the point were search divides*/
-//    while (currentPtr->key < ID1 ) { //&& currentPtr->key < ID2
-//        currentPtr = currentPtr->right;
-//    }
-//    while (currentPtr->key > ID2) {
-//        currentPtr = currentPtr->left;
-//    }
-//
-
