@@ -40,14 +40,13 @@ int main(int argc, char * argv[])
         cout<<"Error print program usuage\n";
         return -1;
     }
-    /*TODO: Check if file exists*/
     
     /*Read from the file-name and build a Red-Black Tree*/
     ifstream file(argv[1]); /*fstream*/
     vector<inputPairPTR> tempVector;
-    int idTemp , countTemp;
+    int idTemp , countTemp ,ignoreFirstLine = 1;
     string temp;
-    int ignoreFirstLine = 1;
+    
     if(file.is_open()){
         while(file.good()){
             if (ignoreFirstLine == 1) { /*Ignore the first number in file which is anyway lenght of input*/
@@ -68,7 +67,7 @@ int main(int argc, char * argv[])
         cout << "Error: Problem opening input file or some other problem with file\n\n";
         exit(0);
     }
-    
+    /*Build the RedBlackTree*/
     NODEPTR root = sortedArrayToBST(tempVector);
     
     /*Freeing the memory of vector , input file may be 1GB so need to free it! */
@@ -82,6 +81,8 @@ int main(int argc, char * argv[])
     rbtree.makeLeafRed(root);
     /*Red Black Tree ready!*/
 
+    
+    /*Loop infiniately unless input is exit command */
     while (1) {
         //Input a command
         string command;
