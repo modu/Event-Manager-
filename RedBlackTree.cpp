@@ -154,9 +154,14 @@ void RBTree::rightrotate(NODEPTR treeroot, NODEPTR y) {
 
 
 void RBTree::rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
+    //cout<<__func__<<"Starts\n";
     while (z->p->color == RED) {
+        //cout<<__func__<<"While\n";
+        
         if (z->p == z->p->p->left) {
+
             NODEPTR y = z->p->p->right;
+
             if (y->color == RED) {
                 z->p->color = BLACK;
                 y->color = BLACK;
@@ -174,8 +179,15 @@ void RBTree::rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
             }
         }
         else {
+            //cout<<__func__<<"Else( z->p == z->p\n";
             NODEPTR y = z->p->p->left;
+            if( y == NULL ){
+                //cout<<__func__<<" y is null \n";
+                return;
+            }
             if (y->color == RED) {
+                //cout<<__func__<<" y->color \n";
+
                 z->p->color = BLACK;
                 y->color = BLACK;
                 z->p->p->color = RED;
@@ -192,11 +204,16 @@ void RBTree::rbinsertfixup(NODEPTR treeroot, NODEPTR z) {
             }
         }
     }
+    //cout<<__func__<<" Before tree\n";
+
     (treeroot)->color = BLACK;
+    //cout<<__func__<<"Ends\n";
+
 }
 
 
 void RBTree::rbinsert(NODEPTR treeroot, int z, int _count) {
+    //cout<<__func__<<"\n";
     NODEPTR Z = (NODEPTR) malloc(sizeof(struct Node));
     Z->key = z;
     Z->count = _count;
@@ -225,21 +242,32 @@ void RBTree::rbinsert(NODEPTR treeroot, int z, int _count) {
 
 
 void RBTree::rbtransplant(NODEPTR treeroot, NODEPTR u, NODEPTR v) {
+    //cout<<__func__<<"\n";
     if (u->p == NULL)
         treeroot = v;
-    else if (u == u->p->left)
+    else if (u == u->p->left){
+        //cout<<__func__<<" u->p->left before this\n";
         u->p->left = v;
+    }
     else
         u->p->right = v;
-    v->p = u->p;
+
+    //cout<<__func__<<" end 1\n";
+    
+    if(v != NULL) v->p = u->p;
+    
+    //cout<<__func__<<" end 1\n";
+
 }
 
 /*Internal function to do rotations and fix of color to maintaint RB tree property
  */
 void RBTree::rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
-    //cout<<"rbdeletefixup \n";
+    //cout<<__func__<<"rbdeletefixup \n";
     while (x != treeroot && x->color == BLACK) {
+        //cout<<__func__<<"while  \n";
         if (x == x->p->left) {
+            //cout<<__func__<<" if x== x->p->left \n";
             NODEPTR w = x->p->right;
             if (w->color == RED) {
                 w->color = BLACK;
@@ -249,6 +277,7 @@ void RBTree::rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
             }
             if (w->left->color == BLACK && w->right->color == BLACK) {
                 w->color = RED;
+                //cout<<__func__<<"before assinging x->p \n";
                 x = x->p;
             }
             else {
@@ -256,6 +285,7 @@ void RBTree::rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
                     w->left->color = BLACK;
                     w->color = RED;
                     rightrotate(treeroot,w);
+                    //cout<<__func__<<"before assinging x->p->right \n";
                     w = x->p->right;
                 }
                 w->color = x->p->color;
@@ -266,6 +296,7 @@ void RBTree::rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
             }
         }
         else {
+            //cout<<__func__<<" else x== x->p->left \n";
             NODEPTR w = x->p->left;
             if (w->color == RED) {
                 w->color = BLACK;
@@ -302,7 +333,6 @@ void RBTree::rbdeletefixup(NODEPTR treeroot, NODEPTR x) {
  */
 void RBTree::rbdelete(NODEPTR treeroot, int z) {
     NODEPTR Z = search(treeroot, z);
-
     if (Z == NULL) {
         printf("Node to be deleted not found\n");
         return;
@@ -310,6 +340,7 @@ void RBTree::rbdelete(NODEPTR treeroot, int z) {
     
     NODEPTR y = Z;
     int yoc = y->color;
+
     NODEPTR x;
     if (Z->left == NULL) {
         x = Z->right;
@@ -321,20 +352,31 @@ void RBTree::rbdelete(NODEPTR treeroot, int z) {
         rbtransplant(treeroot,Z,Z->left);
     }
     else {
+        //cout<<__func__<<" else of z->left == NULL \n";
+
         y = minimum(Z->right);
         yoc = y->color;
         x = y->right;
         if (y->p == Z){
+            //cout<<__func__<<" if y->p == z \n";
             //cout<<y->key; //<< " " << x->key;
             if (x != NULL ) x->p = y;
         }
         else {
+            
             rbtransplant(treeroot,y,y->right);
+            //cout<<__func__<<" after transplant \n";
+
             y->right = Z->right;
+            //cout<<__func__<<" if y->p == z \n";
+
             y->right->p = y;
+            //cout<<__func__<<" if y->p == z \n";
+
         }
         rbtransplant(treeroot,Z,y);
         y->left = Z->left;
+        //cout<<__func__<<"  before y->left->p \n";
         y->left->p = y;
         y->color = Z->color;
     }
@@ -392,6 +434,7 @@ void RBTree::Increase(int theID , int m , NODEPTR root ){
         
     }
     if (currentPtr == NULL) {
+        //cout<<"Inserting \n";
         rbinsert(root, theID , m );
     }
 }
